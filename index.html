@@ -19,9 +19,24 @@
 .table td, .table th {
     min-width: 100px;
 }
+@font-face { font-family: 'DOSMyungjo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSMyungjo.woff') format('woff'); font-weight: normal; font-style: normal; }
 </style>
 <body class='container'>
-	<select id="sb" class="form-control">
+    <input type='file' id='file'/>
+	<h style="
+	    top: 50%;
+    left: 33%;
+    position: relative;
+    font-family: DOSMyungjo;
+    /* color: blue; */
+    /* background-color: blue; */
+    font-size: xxx-large;
+	">21대 총선 지역구별 그래프</h>
+	<select id="sb" class="form-control" style="
+    left: 50%;
+    position: relative;
+    width: 200px;
+    font-family: DOSMyungjo;">
 	  <option value="">지역 선택</option>
 	  <option value="서울">서울</option>
 	  <option value="경기">경기</option>
@@ -46,25 +61,9 @@
 			<table class="table table-bordered table-hover" >
 				<thead class="thead-dark">
 				<tr id="tb_head" class="text-center">
-							
 				</tr>
 			  </thead>
-			
 			  <tbody id="tb_body">
-								   
-		   
-						
-								   
-		   
-						   
-									  
-		   
-							
-								   
-		   
-					  
-											
-		   
 				</tbody>
 			</table>
 		</div>
@@ -251,6 +250,8 @@ function gridExcelToWeb(file) {
 			}
         });
 		$('.fixed-table-container').show();
+		var offset = $(".fixed-table-container").offset();
+        $('html, body').animate({scrollTop : offset.top}, 400);
     };
 
     reader.readAsArrayBuffer(file);
@@ -258,7 +259,6 @@ function gridExcelToWeb(file) {
 
 $('#file').change(function() {
     const selectedFile = $(this)[0].files[0];
-					   
     gridExcelToWeb(selectedFile, $('#grid'))
 });
 $('#sb').change(function() {
