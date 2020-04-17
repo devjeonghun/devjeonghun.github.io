@@ -180,7 +180,7 @@ function gridExcelToWeb(file) {
             }); //end. forEach
 			$('#tb_body').html(' ');
 			$('#tb_head').html(' ');
-			$('#tb_body').append('<tr id="tb_name">td scope="row">후보명</td></tr><tr id="tb_total">'+
+			$('#tb_body').append('<tr id="tb_name"><td scope="row">후보명</td></tr><tr id="tb_total">'+
 					'<td scope="row">총득표</td></tr><tr id="tb_pretotal"><td scope="row">사전투표</td></tr>'+
 				  '<tr id="tb_maintotal"><td scope="row">본투표</td></tr><tr id="tb_per"><td scope="row">사전/본투표</td></tr>');
 			$('#tb_head').append('<th scope="col">#</th>');
