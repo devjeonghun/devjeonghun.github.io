@@ -24,7 +24,7 @@ function getDataAndGrid(){
     new Promise(function(suc,fal){
         try{
             var request = new XMLHttpRequest();
-            request.open('POST', '/21대총선지역구(서울).xlsx', true);
+            request.open('POST', 'https://devjeonghun.github.io/21대총선지역구(서울).xlsx', true);
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             request.responseType = 'blob';
             request.onload = function() {
@@ -78,7 +78,7 @@ function gridExcelToWeb(file, target){
 
 $('#file').change( function(){
     const selectedFile = $(this)[0].files[0];
-	//getDataAndGrid();
-    gridExcelToWeb(selectedFile,  $('#grid'))
+	getDataAndGrid();
+    //gridExcelToWeb(selectedFile,  $('#grid'))
 });
 </script>
