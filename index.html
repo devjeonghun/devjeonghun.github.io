@@ -7,78 +7,258 @@
     <title>Document</title>
     <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="excel.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+	<!-- 합쳐지고 최소화된 최신 CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<!-- 부가적인 테마 -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 </head>
+<style type="text/css">
+.fixed-table-body {
+  overflow-x: auto;
+}
+.table td, .table th {
+    min-width: 100px;
+}
+</style>
 <body class='container'>
     <input type='file' id='file'/>
-    <div id='grid'></div>
+	<select id="sb" class="form-control">
+	  <option value="">지역 선택</option>
+	  <option value="서울">서울</option>
+	  <option value="경기">경기</option>
+	  <option value="강원">강원</option>
+	  <option value="경남">경남</option>
+	  <option value="경북">경북</option>
+	  <option value="광주">광주</option>
+	  <option value="대구">대구</option>
+	  <option value="대전">대전</option>
+	  <option value="부산">부산</option>
+	  <option value="세종">세종</option>
+	  <option value="울산">울산</option>
+	  <option value="인천">인천</option>
+	  <option value="전남">전남</option>
+	  <option value="전북">전북</option>
+	  <option value="제주">제주</option>
+	  <option value="충남">충남</option>
+	  <option value="충북">충북</option>
+	</select>
+	<div class="fixed-table-container">
+		<div class="fixed-table-body">
+			<table class="table table-bordered table-hover">
+				<thead class="thead-dark">
+				<tr id="tb_head" class="text-center">
+				  <th scope="col">#</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				  <tr id="tb_name">
+					<td scope="row">후보명</td>
+				  </tr>
+				  <tr id="tb_total">
+					<td scope="row">총득표</td>
+				  </tr>
+				  <tr id="tb_pretotal">
+					<td scope="row">사전투표</td>
+				  </tr>
+				  <tr id="tb_maintotal">
+					<td scope="row">본투표</td>
+				  </tr>
+				  <tr id="tb_per">
+					<td scope="row">사전/본투표</td>		
+				  </tr>
+				 </tbody>
+			</table>
+		</div>
+	<div>
+	 <canvas id="myChart"></canvas>
+	 <canvas id="myChart2"></canvas>
 </body>
 </html>
  
 
 <script>
 
-var test1 = null, test2 = null;
-
+var tableList = [];
+var myLineChart = null;
+var myLineChart2 = null;
 //데이터를 요청해서 그리는 함수(ajax역할)
-function getDataAndGrid(){
-    new Promise(function(suc,fal){
-        try{
+function getDataAndGrid(value) {
+    new Promise(function(suc, fal) {
+        try {
             var request = new XMLHttpRequest();
-            request.open('POST', 'https://devjeonghun.github.io/21대총선지역구(서울).xlsx', true);
+            request.open('POST', 'https://devjeonghun.github.io/21대총선지역구('+value+').xlsx', true);
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             request.responseType = 'blob';
             request.onload = function() {
-                if(request.status === 200) {
-                    var blob = new Blob([request.response], { type: 'application/xlsx' });
-                    if(blob.size > 0){
-                        gridExcelToWeb(blob,  $('#grid'));	
+                if (request.status === 200) {
+                    var blob = new Blob([request.response], {
+                        type: 'application/xlsx'
+                    });
+                    if (blob.size > 0) {
+                        gridExcelToWeb(blob, $('#grid'));
                     } else {
                         console.log('결과가 없습니다.');
                     }
                 }
-                suc(request);			    	
+                suc(request);
             };
             request.send('content');
-        }catch(err){
+        } catch (err) {
             fal(err);
         }
     });
-}   
+}
 
-function gridExcelToWeb(file, target){
+function gridExcelToWeb(file) {
+	if(myLineChart != null){
+		myLineChart.destroy();
+	}
+	if(myLineChart2 != null){
+		myLineChart2.destroy();
+	}
     var reader = new FileReader();
-
-    reader.onload = function (evt) {
-        if (evt.target.readyState == FileReader.DONE) {
-            var data = evt.target.result;  //해당 데이터, 웹 서버에서 ajax같은거로 가져온 blob 형태의 데이터를 넣어주어도 동작 한다.
-            data = new Uint8Array(data);
-            var workbook = XLSX.read(data, { type: 'array' });
-            var sheetName = '';
-            workbook.SheetNames.forEach( function(data, idx){   //시트 여러개라면 이 안에서 반복문을 통해 돌리면 된다.
-                if(idx == 0){
-                    sheetName = data;
-                }
-            });
-            test1 = workbook;
-
-            var toHtml = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName], { header: '' });
-
-            target.html(toHtml);
-            target.find('table').attr({class:'table table-bordered',id:'excelResult'});  //id나 class같은거를 줄 수 있다.
-            test2 = toHtml;
-            $('#excelResult').find('tr').each(function(idx){
-                if(idx <=1 ){ 
-                    $(this).css({'background-color':'#969da5a3'});
-                }
-            });
-        }
+    var chartData = {
+        labels: [],
+        datasets: [{
+                label: '1등',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)'
+            },
+            {
+                label: '2등',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)'
+            },
+            {
+                label: '1등 사전투표/본투표',
+                data: [],
+                borderColor: '#8AC452'
+            },
+            {
+                label: '2등 사전투표/본투표',
+                data: [],
+                borderColor: '#8AC452'
+            }
+        ]
     };
-    reader.readAsArrayBuffer(file);
-}    
+    reader.onload = function(evt) {
+        if (evt.target.readyState == FileReader.DONE) {
+            var data = evt.target.result; //해당 데이터, 웹 서버에서 ajax같은거로 가져온 blob 형태의 데이터를 넣어주어도 동작 한다.
+            data = new Uint8Array(data);
+            var workbook = XLSX.read(data, {
+                type: 'array'
+            });
+            workbook.SheetNames.forEach(function(item, index, array) {
+                var EXCEL_JSON = {
+                    name: item,
+                    nameObj1: null,
+                    nameObj2: null,
+                    totalObj1: null,
+                    totalObj2: null,
+                    preTotalObj1: null,
+                    preTotalObj2: null,
+                    per1: null,
+                    per2: null,
+                    body: null
+                }
+                EXCEL_JSON.body = XLSX.utils.sheet_to_json(workbook.Sheets[item]);
+                EXCEL_JSON.nameObj1 = EXCEL_JSON.body[1]["후보자별 득표수"];
+                EXCEL_JSON.nameObj2 = EXCEL_JSON.body[1].__EMPTY;
+                EXCEL_JSON.totalObj1 = EXCEL_JSON.body[2]["후보자별 득표수"];
+                EXCEL_JSON.totalObj2 = EXCEL_JSON.body[2].__EMPTY;
+                EXCEL_JSON.preTotalObj1 = EXCEL_JSON.body[4]["후보자별 득표수"];
+                EXCEL_JSON.preTotalObj2 = EXCEL_JSON.body[4].__EMPTY;
+                EXCEL_JSON.per1 = EXCEL_JSON.preTotalObj1 / (EXCEL_JSON.totalObj1 - EXCEL_JSON.preTotalObj1)
+                EXCEL_JSON.per2 = EXCEL_JSON.preTotalObj2 / (EXCEL_JSON.totalObj2 - EXCEL_JSON.preTotalObj2)
+                console.log(EXCEL_JSON);
+                chartData.labels.push(EXCEL_JSON.name);
+                chartData.datasets[0].data.push(EXCEL_JSON.totalObj1);
+                chartData.datasets[1].data.push(EXCEL_JSON.totalObj2);
+                chartData.datasets[2].data.push(EXCEL_JSON.per1);
+                chartData.datasets[3].data.push(EXCEL_JSON.per2);
+				
+				tableList.push(EXCEL_JSON);
+            }); //end. forEach
+			$.each(tableList,function(){
+				$('#tb_head').append('<th scope="col" class="text-center" colspan="2">'+this.name+'</th>');
+				$('#tb_name').append('<td class="text-center">'+this.nameObj1+'</td>');
+				$('#tb_name').append('<td class="text-center">'+this.nameObj2+'</td>');
+				$('#tb_total').append('<td class="text-center">'+this.totalObj1+'</td>');
+				$('#tb_total').append('<td class="text-center">'+this.totalObj2+'</td>');
+				$('#tb_pretotal').append('<td class="text-center">'+this.preTotalObj1+'</td>');
+				$('#tb_pretotal').append('<td class="text-center">'+this.preTotalObj2+'</td>');
+				$('#tb_maintotal').append('<td class="text-center">'+(this.totalObj1-this.preTotalObj1)+'</td>');
+				$('#tb_maintotal').append('<td class="text-center">'+(this.totalObj2-this.preTotalObj2)+'</td>');
+				$('#tb_per').append('<td class="text-center">'+this.per1.toFixed(3)+'</td>');
+				$('#tb_per').append('<td class="text-center">'+this.per2.toFixed(3)+'</td>');
+			})
+        }
+        
+        var ctx = document.getElementById("myChart");
+        myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                        label: '1등',
+                        borderColor: 'rgb(255, 99, 132)',
+                        data: chartData.datasets[0].data
+                    },
+                    {
+                        label: '2등',
+                        borderColor: '#00A0E2',
+                        data: chartData.datasets[1].data
+                    }
+                ]
+            },
+            options: {}
+        });
+		var ctx2 = document.getElementById("myChart2");
+        myLineChart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: '1등 사전투표/본투표',
+                        borderColor: 'rgb(255, 99, 132)',
+                        data: chartData.datasets[2].data
+                    },
+                    {
+                        label: '2등 사전투표/본투표',
+                        borderColor: '#00A0E2',
+                        data: chartData.datasets[3].data
+                    }
+                ]
+            },
+            options: {
+			scales:{
+				yAxes: [{
+					ticks: {
+						min: 0.0,
+						max: 0.5,
+						fontSize : 14,
+					}
+				}]
+			}
+			}
+        });
+    };
 
-$('#file').change( function(){
+    reader.readAsArrayBuffer(file);
+}
+
+$('#file').change(function() {
     const selectedFile = $(this)[0].files[0];
-	getDataAndGrid();
-    //gridExcelToWeb(selectedFile,  $('#grid'))
+    //getDataAndGrid();
+    gridExcelToWeb(selectedFile, $('#grid'))
+});
+$('#sb').change(function() {
+   if(this.value != ''){
+	getDataAndGrid(this.value);
+   }
 });
 </script>
