@@ -24,7 +24,7 @@ function getDataAndGrid(){
     new Promise(function(suc,fal){
         try{
             var request = new XMLHttpRequest();
-            request.open('POST', 'https://tmpstorage.com/download/file/ziakd9ry41', true);
+            request.open('POST', '/21대총선지역구(서울).xlsx', true);
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             request.responseType = 'blob';
             request.onload = function() {
