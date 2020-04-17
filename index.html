@@ -173,7 +173,7 @@ function gridExcelToWeb(file) {
                 EXCEL_JSON.preTotalObj2 = EXCEL_JSON.body[4].__EMPTY;
                 EXCEL_JSON.per1 = EXCEL_JSON.preTotalObj1 / (EXCEL_JSON.totalObj1 - EXCEL_JSON.preTotalObj1)
                 EXCEL_JSON.per2 = EXCEL_JSON.preTotalObj2 / (EXCEL_JSON.totalObj2 - EXCEL_JSON.preTotalObj2)
-                console.log(EXCEL_JSON);
+
                 chartData.labels.push(EXCEL_JSON.name);
                 chartData.datasets[0].data.push(EXCEL_JSON.totalObj1);
                 chartData.datasets[1].data.push(EXCEL_JSON.totalObj2);
