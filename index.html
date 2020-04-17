@@ -83,7 +83,7 @@ function getDataAndGrid(value) {
     new Promise(function(suc, fal) {
         try {
             var request = new XMLHttpRequest();
-            request.open('GET', '21대총선지역구(서울).xlsx', true);
+            request.open('GET', '21대총선지역구('+value+').xlsx', true);
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             request.responseType = 'blob';
             request.onload = function() {
