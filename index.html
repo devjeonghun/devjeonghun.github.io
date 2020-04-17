@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>21대 총선 지역구별 그래프</title>
+	<script src="excel.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script src="excel.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-	<!-- 합쳐지고 최소화된 최신 CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-<!-- 부가적인 테마 -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
-<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 </head>
 <style type="text/css">
 .fixed-table-body {
@@ -24,7 +21,6 @@
 }
 </style>
 <body class='container'>
-
 	<select id="sb" class="form-control">
 	  <option value="">지역 선택</option>
 	  <option value="서울">서울</option>
@@ -47,29 +43,29 @@
 	</select>
 	<div class="fixed-table-container">
 		<div class="fixed-table-body">
-			<table class="table table-bordered table-hover">
+			<table class="table table-bordered table-hover" >
 				<thead class="thead-dark">
 				<tr id="tb_head" class="text-center">
-				  <th scope="col">#</th>
+							
 				</tr>
 			  </thead>
-			  <tbody>
-				  <tr id="tb_name">
-					<td scope="row">후보명</td>
-				  </tr>
-				  <tr id="tb_total">
-					<td scope="row">총득표</td>
-				  </tr>
-				  <tr id="tb_pretotal">
-					<td scope="row">사전투표</td>
-				  </tr>
-				  <tr id="tb_maintotal">
-					<td scope="row">본투표</td>
-				  </tr>
-				  <tr id="tb_per">
-					<td scope="row">사전/본투표</td>		
-				  </tr>
-				 </tbody>
+			
+			  <tbody id="tb_body">
+								   
+		   
+						
+								   
+		   
+						   
+									  
+		   
+							
+								   
+		   
+					  
+											
+		   
+				</tbody>
 			</table>
 		</div>
 	<div>
@@ -146,11 +142,13 @@ function gridExcelToWeb(file) {
     };
     reader.onload = function(evt) {
         if (evt.target.readyState == FileReader.DONE) {
+			
             var data = evt.target.result; //해당 데이터, 웹 서버에서 ajax같은거로 가져온 blob 형태의 데이터를 넣어주어도 동작 한다.
             data = new Uint8Array(data);
             var workbook = XLSX.read(data, {
                 type: 'array'
             });
+			tableList = [];
             workbook.SheetNames.forEach(function(item, index, array) {
                 var EXCEL_JSON = {
                     name: item,
@@ -173,7 +171,7 @@ function gridExcelToWeb(file) {
                 EXCEL_JSON.preTotalObj2 = EXCEL_JSON.body[4].__EMPTY;
                 EXCEL_JSON.per1 = EXCEL_JSON.preTotalObj1 / (EXCEL_JSON.totalObj1 - EXCEL_JSON.preTotalObj1)
                 EXCEL_JSON.per2 = EXCEL_JSON.preTotalObj2 / (EXCEL_JSON.totalObj2 - EXCEL_JSON.preTotalObj2)
-
+                console.log(EXCEL_JSON);
                 chartData.labels.push(EXCEL_JSON.name);
                 chartData.datasets[0].data.push(EXCEL_JSON.totalObj1);
                 chartData.datasets[1].data.push(EXCEL_JSON.totalObj2);
@@ -182,6 +180,12 @@ function gridExcelToWeb(file) {
 				
 				tableList.push(EXCEL_JSON);
             }); //end. forEach
+			$('#tb_body').html(' ');
+			$('#tb_head').html(' ');
+			$('#tb_body').append('<tr id="tb_name">td scope="row">후보명</td></tr><tr id="tb_total">'+
+					'<td scope="row">총득표</td></tr><tr id="tb_pretotal"><td scope="row">사전투표</td></tr>'+
+				  '<tr id="tb_maintotal"><td scope="row">본투표</td></tr><tr id="tb_per"><td scope="row">사전/본투표</td></tr>');
+			$('#tb_head').append('<th scope="col">#</th>');
 			$.each(tableList,function(){
 				$('#tb_head').append('<th scope="col" class="text-center" colspan="2">'+this.name+'</th>');
 				$('#tb_name').append('<td class="text-center">'+this.nameObj1+'</td>');
@@ -246,6 +250,7 @@ function gridExcelToWeb(file) {
 			}
 			}
         });
+		$('.fixed-table-container').show();
     };
 
     reader.readAsArrayBuffer(file);
@@ -253,7 +258,7 @@ function gridExcelToWeb(file) {
 
 $('#file').change(function() {
     const selectedFile = $(this)[0].files[0];
-    //getDataAndGrid();
+					   
     gridExcelToWeb(selectedFile, $('#grid'))
 });
 $('#sb').change(function() {
@@ -261,4 +266,7 @@ $('#sb').change(function() {
 	getDataAndGrid(this.value);
    }
 });
+$(document).ready(function(){
+	$('.fixed-table-container').hide();
+})
 </script>
