@@ -98,7 +98,7 @@ function getDataAndGrid(value) {
                         type: 'application/xlsx'
                     });
                     if (blob.size > 0) {
-                        gridExcelToWeb(blob, $('#grid'));
+                        gridExcelToWeb(blob);
                     } else {
                         console.log('결과가 없습니다.');
                     }
